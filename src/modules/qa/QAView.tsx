@@ -1,181 +1,396 @@
-import { useState } from 'react';
-import { 
-  CheckCircle2, 
-  XCircle, 
-  MessageSquare, 
-  SplitSquareHorizontal, 
-  Play, 
-  Maximize,
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import {
   AlertTriangle,
-  History,
-  ArrowRight
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  ArrowRight,
+  CheckCircle2,
+  LoaderCircle,
+  Maximize,
+  MessageSquare,
+  Play,
+  RefreshCcw,
+  SplitSquareHorizontal,
+  XCircle,
+} from 'lucide-react';
+
+import { EmptyState } from '@/components/shared/EmptyState';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { ReviewQueue } from '@/modules/qa/components/ReviewQueue';
+import { useQA } from '@/modules/qa/hooks/use-qa';
+import type { QADataSource, QAQueueItem, ReviewDecision, QAViewScenario } from '@/modules/qa/types';
+import { useProjects } from '@/modules/projects/hooks/use-projects';
+import { cn } from '@/lib/utils';
+
+function getScenario(searchParams: URLSearchParams): QAViewScenario {
+  const value = searchParams.get('qaScenario');
+
+  if (value === 'empty' || value === 'error' || value === 'loading') {
+    return value;
+  }
+
+  return 'loaded';
+}
+
+function getSource(searchParams: URLSearchParams): QADataSource | undefined {
+  const value = searchParams.get('qaSource');
+
+  if (value === 'mock' || value === 'api' || value === 'hybrid') {
+    return value;
+  }
+
+  return undefined;
+}
+
+function getDecisionStatus(decision: ReviewDecision): QAQueueItem['status'] {
+  if (decision === 'approve') {
+    return 'approved';
+  }
+
+  if (decision === 'reject') {
+    return 'rejected';
+  }
+
+  return 'changes_requested';
+}
+
+function formatRelativeTime(iso: string) {
+  const deltaMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.max(1, Math.round(deltaMs / 60000));
+
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
+
+  const hours = Math.round(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+
+  return `${Math.round(hours / 24)}d ago`;
+}
 
 export function QAView() {
+  const { projectId } = useParams();
+  const [searchParams] = useSearchParams();
+  const scenario = getScenario(searchParams);
+  const requestedSource = getSource(searchParams);
+  const { project } = useProjects(projectId);
+  const { queue: remoteQueue, status, error, source, isEmpty, refresh } = useQA({
+    projectId,
+    scenario,
+    source: requestedSource,
+  });
   const [viewMode, setViewMode] = useState<'split' | 'single'>('split');
+  const [selectedId, setSelectedId] = useState<string | undefined>();
+  const [feedback, setFeedback] = useState('');
+  const [queue, setQueue] = useState<QAQueueItem[]>([]);
+
+  useEffect(() => {
+    if (status === 'success') {
+      setQueue(remoteQueue);
+      setSelectedId((current) => {
+        if (current && remoteQueue.some((item) => item.id === current)) {
+          return current;
+        }
+
+        return remoteQueue[0]?.id;
+      });
+    }
+  }, [remoteQueue, status]);
+
+  const selectedItem = useMemo(() => queue.find((item) => item.id === selectedId) ?? queue[0], [queue, selectedId]);
+  const pendingCount = useMemo(() => queue.filter((item) => item.status === 'pending' || item.status === 'changes_requested').length, [queue]);
+  const recentDecisions = useMemo(
+    () => [...queue].filter((item) => item.status === 'approved' || item.status === 'rejected').sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).slice(0, 3),
+    [queue],
+  );
+
+  function applyDecision(decision: ReviewDecision) {
+    if (!selectedItem) {
+      return;
+    }
+
+    const nextStatus = getDecisionStatus(decision);
+    const note = feedback.trim();
+
+    setQueue((current) =>
+      current.map((item) =>
+        item.id === selectedItem.id
+          ? {
+              ...item,
+              status: nextStatus,
+              updatedAt: new Date().toISOString(),
+              reviewerNote: note || item.reviewerNote,
+            }
+          : item,
+      ),
+    );
+
+    if (decision !== 'approve') {
+      setFeedback('');
+    }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="h-full overflow-y-auto p-6 custom-scrollbar">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <LoaderCircle className="h-5 w-5 animate-spin text-primary" />
+              <div>
+                <CardTitle>Loading review queue</CardTitle>
+                <CardDescription>Preparing QA items for {project?.title ?? projectId ?? 'the current project'}.</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-4 lg:grid-cols-[20rem_minmax(0,1fr)]">
+            <div className="space-y-3">
+              <div className="h-20 animate-pulse rounded-[var(--radius-sm)] bg-surface-low" />
+              <div className="h-20 animate-pulse rounded-[var(--radius-sm)] bg-surface-low" />
+              <div className="h-20 animate-pulse rounded-[var(--radius-sm)] bg-surface-low" />
+            </div>
+            <div className="h-[28rem] animate-pulse rounded-[var(--radius-lg)] bg-surface-low" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="h-full overflow-y-auto p-6 custom-scrollbar">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-400" />
+              <div>
+                <CardTitle>Review queue unavailable</CardTitle>
+                <CardDescription>{error}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <Button onClick={refresh}>
+              <RefreshCcw className="h-4 w-4" />
+              Retry
+            </Button>
+            <Badge variant="muted">scenario: {scenario}</Badge>
+            <Badge variant="muted">source: {requestedSource ?? 'env default'}</Badge>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="h-full overflow-y-auto p-6 custom-scrollbar">
+        <EmptyState
+          title="No items in the review queue"
+          description={`No pending assets were returned for ${project?.title ?? projectId ?? 'this project'}. Use ?qaScenario=loaded to inspect the working slice.`}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 flex flex-col bg-background overflow-hidden">
-      {/* Header */}
-      <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-surface">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/5 bg-surface px-6">
         <div className="flex items-center gap-4">
-          <h2 className="text-sm font-semibold">QA & Patches</h2>
-          <div className="px-2 py-1 rounded bg-amber-500/10 text-amber-500 text-[0.65rem] font-bold uppercase tracking-wider border border-amber-500/20 flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> 3 Pending Reviews
+          <div>
+            <h2 className="text-sm font-semibold">Review</h2>
+            <p className="text-xs text-on-surface-variant">{project?.title ?? 'Project review queue'} · {queue.length} items</p>
           </div>
+          <Badge variant={pendingCount > 0 ? 'warning' : 'success'}>
+            <AlertTriangle className="mr-1 h-3 w-3" />
+            {pendingCount} pending reviews
+          </Badge>
+          <Badge variant="muted">data: {source ?? requestedSource ?? 'mock'}</Badge>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <div className="flex bg-surface-low rounded border border-white/10 p-0.5">
-            <button 
+          <div className="flex rounded border border-white/10 bg-surface-low p-0.5">
+            <button
               onClick={() => setViewMode('single')}
-              className={cn("px-3 py-1 rounded-sm text-xs font-medium transition-colors", viewMode === 'single' ? "bg-surface-highest shadow text-white" : "text-white/60 hover:text-white")}
+              className={cn('rounded-sm px-3 py-1 text-xs font-medium transition-colors', viewMode === 'single' ? 'bg-surface-highest text-white shadow' : 'text-white/60 hover:text-white')}
             >
               Single
             </button>
-            <button 
+            <button
               onClick={() => setViewMode('split')}
-              className={cn("px-3 py-1 rounded-sm text-xs font-medium transition-colors flex items-center gap-1", viewMode === 'split' ? "bg-surface-highest shadow text-white" : "text-white/60 hover:text-white")}
+              className={cn(
+                'flex items-center gap-1 rounded-sm px-3 py-1 text-xs font-medium transition-colors',
+                viewMode === 'split' ? 'bg-surface-highest text-white shadow' : 'text-white/60 hover:text-white',
+              )}
             >
-              <SplitSquareHorizontal className="w-3 h-3" /> Split
+              <SplitSquareHorizontal className="h-3 w-3" /> Split
             </button>
           </div>
+          <Button variant="outline" size="sm" onClick={refresh}>
+            <RefreshCcw className="h-3.5 w-3.5" />
+            Refresh
+          </Button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        
-        {/* Left List */}
-        <aside className="w-72 border-r border-white/5 bg-surface-lowest flex flex-col shrink-0">
-          <div className="p-4 border-b border-white/5">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4">Review Queue</h3>
-            <div className="space-y-2">
-              <div className="p-3 rounded-lg bg-surface border border-primary/30 cursor-pointer">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[0.6rem] font-mono text-primary uppercase tracking-widest">SCENE_01_RENDER</span>
-                  <span className="text-[0.6rem] text-white/40">2m ago</span>
-                </div>
-                <div className="text-sm font-medium truncate mb-1">Cyberpunk Cityscape V2</div>
-                <div className="text-xs text-white/60 truncate">Needs review against Ref A</div>
-              </div>
-              <div className="p-3 rounded-lg bg-surface-low border border-white/5 hover:border-white/20 cursor-pointer transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[0.6rem] font-mono text-white/40 uppercase tracking-widest">CHAR_MODEL_V2</span>
-                  <span className="text-[0.6rem] text-white/40">1h ago</span>
-                </div>
-                <div className="text-sm font-medium truncate mb-1">Hero Character Turnaround</div>
-                <div className="text-xs text-white/60 truncate">Check lighting consistency</div>
-              </div>
-            </div>
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <aside className="flex w-80 shrink-0 flex-col border-r border-white/5 bg-surface-lowest">
+          <div className="border-b border-white/5 p-4">
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Review Queue</h3>
+            <ReviewQueue items={queue} selectedId={selectedItem?.id} onSelect={setSelectedId} />
           </div>
-          <div className="p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-4 flex items-center gap-2">
-              <History className="w-4 h-4" /> Recent Decisions
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+          <div className="space-y-3 p-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Recent Decisions</h3>
+            {recentDecisions.length > 0 ? (
+              recentDecisions.map((item) => (
+                <div key={item.id} className="rounded-[var(--radius-sm)] border border-white/8 bg-surface-low p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-xs font-medium text-on-surface">{item.title}</div>
+                      <div className="mt-1 text-[0.7rem] text-on-surface-variant">{item.reviewerNote ?? 'Decision registered in this session.'}</div>
+                    </div>
+                    <Badge variant={item.status === 'approved' ? 'success' : 'danger'}>{item.status}</Badge>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-medium truncate">ESTABLISHING_SHOT_v1</div>
-                  <div className="text-[0.6rem] text-white/40">Approved by You</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
-                  <XCircle className="w-3.5 h-3.5 text-red-500" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-medium truncate">DRONE_FLYBY_v2</div>
-                  <div className="text-[0.6rem] text-white/40">Rejected: "Too much motion blur"</div>
-                </div>
-              </div>
-            </div>
+              ))
+            ) : (
+              <p className="text-xs text-on-surface-variant">No final decisions recorded yet.</p>
+            )}
           </div>
         </aside>
 
-        {/* Comparison Area */}
-        <main className="flex-1 flex flex-col min-w-0 bg-background">
-          <div className="flex-1 flex p-6 gap-6">
-            
-            {/* Reference / Previous Version */}
-            {viewMode === 'split' && (
-              <div className="flex-1 flex flex-col">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs font-mono text-white/60 uppercase tracking-widest">Reference / Previous</div>
-                  <span className="text-xs bg-surface-highest px-2 py-1 rounded">v1.0</span>
+        <main className="flex min-w-0 flex-1 flex-col bg-background">
+          <div className="flex flex-1 gap-6 p-6">
+            {viewMode === 'split' && selectedItem?.referenceAssetUrl ? (
+              <div className="flex flex-1 flex-col">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-xs font-mono uppercase tracking-widest text-white/60">Reference / Previous</div>
+                  <span className="rounded bg-surface-highest px-2 py-1 text-xs">{selectedItem.referenceVersionLabel ?? 'reference'}</span>
                 </div>
-                <div className="flex-1 bg-black rounded-lg border border-white/10 relative overflow-hidden flex items-center justify-center group">
-                  <img src="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2669&auto=format&fit=crop" alt="Ref" className="w-full h-full object-cover opacity-80" />
-                  <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-2 bg-black/50 backdrop-blur rounded hover:bg-black/80 text-white transition-colors">
-                      <Maximize className="w-4 h-4" />
+                <div className="group relative flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black">
+                  <img src={selectedItem.referenceAssetUrl} alt="Reference" className="h-full w-full object-cover opacity-80" />
+                  <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button type="button" className="rounded bg-black/50 p-2 text-white transition-colors hover:bg-black/80">
+                      <Maximize className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {/* Current Review Item */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-mono text-primary uppercase tracking-widest flex items-center gap-2">
+            <div className="flex flex-1 flex-col">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary">
                   {viewMode === 'split' && <ArrowRight className="w-3 h-3" />}
                   Current Render
                 </div>
-                <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">v2.0 (Review)</span>
+                <span className="rounded bg-primary/20 px-2 py-1 text-xs text-primary">{selectedItem?.currentVersionLabel}</span>
               </div>
-              <div className="flex-1 bg-black rounded-lg border border-primary/30 relative overflow-hidden flex items-center justify-center group shadow-[0_0_30px_rgba(99,102,241,0.1)]">
-                <img src="https://images.unsplash.com/photo-1535295972055-1c762f4483e5?q=80&w=2574&auto=format&fit=crop" alt="Current" className="w-full h-full object-cover" />
-                
-                {/* Play Button Overlay for Video */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="w-16 h-16 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white flex items-center justify-center hover:scale-105 transition-transform">
-                    <Play className="w-8 h-8 ml-1" />
-                  </button>
+              <div className="group relative flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-primary/30 bg-black shadow-[0_0_30px_rgba(99,102,241,0.1)]">
+                {selectedItem ? <img src={selectedItem.currentAssetUrl} alt={selectedItem.title} className="h-full w-full object-cover" /> : null}
+
+                {selectedItem?.assetKind === 'video' ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button type="button" className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-transform hover:scale-105">
+                      <Play className="ml-1 h-8 w-8" />
+                    </button>
+                  </div>
+                ) : null}
+
+                <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                  {selectedItem?.tags.map((tag) => (
+                    <Badge key={tag} variant="muted">{tag}</Badge>
+                  ))}
                 </div>
 
-                <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-2 bg-black/50 backdrop-blur rounded hover:bg-black/80 text-white transition-colors">
-                    <Maximize className="w-4 h-4" />
+                <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button type="button" className="rounded bg-black/50 p-2 text-white transition-colors hover:bg-black/80">
+                    <Maximize className="h-4 w-4" />
                   </button>
                 </div>
+              </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>{selectedItem?.title}</CardTitle>
+                    <CardDescription>{selectedItem?.summary}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <div className="text-xs uppercase tracking-widest text-on-surface-variant">Provider</div>
+                      <div className="mt-1 text-sm text-on-surface">{selectedItem?.provider} · {selectedItem?.model}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs uppercase tracking-widest text-on-surface-variant">Submitted</div>
+                      <div className="mt-1 text-sm text-on-surface">{selectedItem ? formatRelativeTime(selectedItem.submittedAt) : '-'}</div>
+                    </div>
+                    <div className="md:col-span-2">
+                      <div className="text-xs uppercase tracking-widest text-on-surface-variant">Prompt package</div>
+                      <div className="mt-1 text-sm text-on-surface">{selectedItem?.promptLabel}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Session status</CardTitle>
+                    <CardDescription>Current manual test mode for this route.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm text-on-surface-variant">
+                    <div className="flex items-center justify-between rounded-[var(--radius-sm)] bg-surface-lowest px-3 py-2">
+                      <span>Scenario</span>
+                      <span className="font-mono text-on-surface">{scenario}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-[var(--radius-sm)] bg-surface-lowest px-3 py-2">
+                      <span>Data source</span>
+                      <span className="font-mono text-on-surface">{source ?? requestedSource ?? 'mock'}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-[var(--radius-sm)] bg-surface-lowest px-3 py-2">
+                      <span>Asset type</span>
+                      <span className="font-mono text-on-surface">{selectedItem?.assetKind ?? '-'}</span>
+                    </div>
+                    {selectedItem?.durationLabel ? (
+                      <div className="flex items-center justify-between rounded-[var(--radius-sm)] bg-surface-lowest px-3 py-2">
+                        <span>Duration</span>
+                        <span className="font-mono text-on-surface">{selectedItem.durationLabel}</span>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
               </div>
             </div>
-
           </div>
 
-          {/* Action Panel */}
-          <div className="h-48 border-t border-white/5 bg-surface flex shrink-0">
-            {/* Feedback Input */}
-            <div className="flex-1 p-6 flex flex-col">
-              <label className="text-xs font-mono text-white/60 uppercase tracking-widest mb-2 flex items-center gap-2">
-                <MessageSquare className="w-3.5 h-3.5" /> Feedback / Patch Request
+          <div className="flex h-48 shrink-0 border-t border-white/5 bg-surface">
+            <div className="flex flex-1 flex-col p-6">
+              <label className="mb-2 flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white/60">
+                <MessageSquare className="h-3.5 w-3.5" /> Feedback / Patch Request
               </label>
-              <textarea 
-                className="flex-1 bg-surface-lowest border border-white/10 rounded-lg p-3 text-sm focus:outline-none focus:border-primary/50 transition-colors resize-none custom-scrollbar"
+              <Textarea
+                className="custom-scrollbar flex-1 resize-none bg-surface-lowest"
                 placeholder="Describe what needs to be fixed or changed..."
-              ></textarea>
+                value={feedback}
+                onChange={(event) => setFeedback(event.target.value)}
+              />
             </div>
 
-            {/* Actions */}
-            <div className="w-80 border-l border-white/5 p-6 flex flex-col justify-center gap-3">
-              <button className="w-full py-3 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg text-sm font-bold hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-5 h-5" /> Approve & Proceed
-              </button>
-              <button className="w-full py-3 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-lg text-sm font-bold hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2">
-                <AlertTriangle className="w-5 h-5" /> Request Patch
-              </button>
-              <button className="w-full py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg text-sm font-bold hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2">
-                <XCircle className="w-5 h-5" /> Reject & Restart
-              </button>
+            <div className="flex w-80 flex-col justify-center gap-3 border-l border-white/5 p-6">
+              <Button className="w-full justify-center" onClick={() => applyDecision('approve')}>
+                <CheckCircle2 className="h-5 w-5" /> Approve & Proceed
+              </Button>
+              <Button className="w-full justify-center" variant="secondary" onClick={() => applyDecision('request_patch')}>
+                <AlertTriangle className="h-5 w-5" /> Request Patch
+              </Button>
+              <Button className="w-full justify-center" variant="outline" onClick={() => applyDecision('reject')}>
+                <XCircle className="h-5 w-5" /> Reject & Restart
+              </Button>
             </div>
           </div>
         </main>
-
       </div>
     </div>
   );

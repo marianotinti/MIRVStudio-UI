@@ -1,12 +1,12 @@
 import { Sparkles } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 
-import { primaryNavigation, secondaryNavigation } from '@/config/navigation';
+import { getPrimaryNavigation, secondaryNavigation, type NavItem } from '@/config/navigation';
 import { APP_VERSION } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui-store';
 
-function NavigationGroup({ items, collapsed }: { items: typeof primaryNavigation; collapsed: boolean }) {
+function NavigationGroup({ items, collapsed }: { items: NavItem[]; collapsed: boolean }) {
   return (
     <nav className="space-y-1">
       {items.map((item) => {
@@ -37,6 +37,8 @@ function NavigationGroup({ items, collapsed }: { items: typeof primaryNavigation
 
 export function AppSidebar() {
   const isCollapsed = useUIStore((state) => state.isSidebarCollapsed);
+  const { projectId } = useParams();
+  const primaryNavigation = getPrimaryNavigation(projectId);
 
   return (
     <aside className={cn('flex h-screen shrink-0 flex-col border-r border-white/8 bg-surface-lowest/90 px-3 py-4 transition-all', isCollapsed ? 'w-20' : 'w-72')}>

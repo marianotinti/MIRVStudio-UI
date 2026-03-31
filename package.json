@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "node -e \"console.log('Lint: no linter configured')\"",
+    "lint": "npm run typecheck && npm run smoke:routes",
     "typecheck": "tsc --noEmit",
     "audit:branding": "node scripts/audit-branding.mjs",
     "audit:imports": "node scripts/audit-import-aliases.mjs",
@@ -34,7 +34,6 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.1",
     "tailwind-merge": "^3.5.0",
-    "vite": "^6.2.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

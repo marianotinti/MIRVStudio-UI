@@ -2,11 +2,11 @@ import { Bell, Cloud, Menu, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRouteTitle } from '@/hooks/use-route-title';
+import { useCurrentRouteMetadata } from '@/hooks/use-route-title';
 import { useUIStore } from '@/stores/ui-store';
 
 export function Topbar() {
-  const title = useRouteTitle();
+  const route = useCurrentRouteMetadata();
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
 
   return (
@@ -17,9 +17,9 @@ export function Topbar() {
         </Button>
         <div>
           <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.24em] text-primary">
-            {title}
+            {route.title}
           </span>
-          <p className="mt-1 text-sm text-on-surface-variant">MIRV Studio application shell</p>
+          <p className="mt-1 text-sm text-on-surface-variant">{route.description}</p>
         </div>
       </div>
 

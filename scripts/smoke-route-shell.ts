@@ -2,82 +2,85 @@ import assert from 'node:assert/strict';
 
 import { matchRoutes } from 'react-router-dom';
 
-import { appRoutes, type ShellLayoutHandle } from '../src/router/routes';
+import { routes } from '../src/lib/routes.ts';
+import { routeMetadata, type AppRouteHandle } from '../src/router/route-metadata.ts';
+import { appRoutes } from '../src/router/routes.tsx';
 
-function getShellHandle(pathname: string) {
+function getRouteHandle(pathname: string) {
   const matches = matchRoutes(appRoutes, pathname);
 
   assert(matches && matches.length > 0, `No route matched ${pathname}`);
 
-  const lastMatch = matches[matches.length - 1]?.route as { handle?: ShellLayoutHandle };
-  const shell = lastMatch.handle?.shell;
+  const lastMatch = matches[matches.length - 1]?.route as { handle?: AppRouteHandle };
+  const route = lastMatch.handle?.route;
 
-  assert(shell, `Missing shell metadata for ${pathname}`);
+  assert(route, `Missing route metadata for ${pathname}`);
 
-  return shell;
+  return route;
 }
+
+const sampleProjectId = 'sample-project';
 
 const requiredRoutes = [
-  '/projects',
-  '/create',
-  '/projects/alpha',
-  '/projects/alpha/pipeline',
-  '/projects/alpha/assets',
-  '/projects/alpha/board',
-  '/projects/alpha/studio',
-  '/projects/alpha/qa',
-  '/settings',
+  routes.projects(),
+  routes.create(),
+  routes.projectOverview(sampleProjectId),
+  routes.projectPipeline(sampleProjectId),
+  routes.projectAssets(sampleProjectId),
+  routes.projectBoard(sampleProjectId),
+  routes.projectStudio(sampleProjectId),
+  routes.projectQA(sampleProjectId),
+  routes.settings(),
 ];
+
+assert.equal(requiredRoutes.length, Object.keys(routeMetadata).length, 'Required route coverage drifted from route metadata');
 
 for (const pathname of requiredRoutes) {
-  getShellHandle(pathname);
+  getRouteHandle(pathname);
 }
 
-const shellCases = [
+const routeCases = [
   {
-    pathname: '/projects/alpha/board',
-    expected: {
-      showProjectHeader: true,
-      showInspector: false,
-      showBottomDrawer: false,
-    },
+    pathname: routes.projectBoard(sampleProjectId),
+    expectedMetadata: routeMetadata.projectBoard,
   },
   {
-    pathname: '/projects/alpha/studio',
-    expected: {
-      showProjectHeader: true,
-      showInspector: false,
-      showBottomDrawer: false,
-    },
+    pathname: routes.projectStudio(sampleProjectId),
+    expectedMetadata: routeMetadata.projectStudio,
   },
   {
-    pathname: '/projects/alpha/pipeline',
-    expected: {
-      showProjectHeader: true,
-      showInspector: true,
-      showBottomDrawer: true,
-    },
+    pathname: routes.projectPipeline(sampleProjectId),
+    expectedMetadata: routeMetadata.projectPipeline,
   },
   {
-    pathname: '/projects/alpha/assets',
-    expected: {
-      showProjectHeader: true,
-      showInspector: true,
-      showBottomDrawer: true,
-    },
+    pathname: routes.projectAssets(sampleProjectId),
+    expectedMetadata: routeMetadata.projectAssets,
   },
   {
-    pathname: '/projects/alpha/qa',
-    expected: {
-      showProjectHeader: true,
-      showInspector: true,
-      showBottomDrawer: true,
-    },
+    pathname: routes.projectQA(sampleProjectId),
+    expectedMetadata: routeMetadata.projectQA,
+  },
+  {
+    pathname: routes.projects(),
+    expectedMetadata: routeMetadata.projects,
   },
 ];
 
-for (const testCase of shellCases) {
-  assert.deepEqual(getShellHandle(testCase.pathname), testCase.expected, `Shell metadata mismatch for ${testCase.pathname}`);
+for (const testCase of routeCases) {
+  const resolvedMetadata = getRouteHandle(testCase.pathname);
+
+  assert.equal(resolvedMetadata.id, testCase.expectedMetadata.id, `Route id mismatch for ${testCase.pathname}`);
+  assert.equal(resolvedMetadata.title, testCase.expectedMetadata.title, `Route title mismatch for ${testCase.pathname}`);
+  assert.equal(
+    resolvedMetadata.description,
+    testCase.expectedMetadata.description,
+    `Route description mismatch for ${testCase.pathname}`,
+  );
+  assert.deepEqual(
+    resolvedMetadata.shell,
+    testCase.expectedMetadata.shell,
+    `Shell metadata mismatch for ${testCase.pathname}`,
+  );
 }
 
-console.log('Route shell smoke test: OK');
+console.log('Route shell metadata smoke test: OK');

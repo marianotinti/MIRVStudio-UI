@@ -1,46 +1,18 @@
 import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useMatches } from 'react-router-dom';
 
-const routeTitles: Record<string, string> = {
-  '/projects': 'Projects',
-  '/create': 'Create Project',
-  '/settings': 'Settings',
-};
+import { appShellRouteMetadata, isAppRouteHandle } from '@/router/route-metadata';
 
-export function useRouteTitle() {
-  const location = useLocation();
+export function useCurrentRouteMetadata() {
+  const matches = useMatches();
 
   return useMemo(() => {
-    const exact = routeTitles[location.pathname];
+    const routeHandle = [...matches].map((match) => match.handle).reverse().find(isAppRouteHandle);
 
-    if (exact) {
-      return exact;
-    }
+    return routeHandle?.route ?? appShellRouteMetadata;
+  }, [matches]);
+}
 
-    if (location.pathname.includes('/pipeline')) {
-      return 'Pipeline';
-    }
-
-    if (location.pathname.includes('/assets')) {
-      return 'Assets';
-    }
-
-    if (location.pathname.includes('/board')) {
-      return 'Board';
-    }
-
-    if (location.pathname.includes('/studio')) {
-      return 'Studio';
-    }
-
-    if (location.pathname.includes('/qa')) {
-      return 'QA';
-    }
-
-    if (/^\/projects\/[a-z0-9-]+$/.test(location.pathname)) {
-      return 'Project Overview';
-    }
-
-    return 'MIRV Studio';
-  }, [location.pathname]);
+export function useRouteTitle() {
+  return useCurrentRouteMetadata().title;
 }

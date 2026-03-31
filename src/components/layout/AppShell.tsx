@@ -6,22 +6,14 @@ import { InspectorPanel } from '@/components/layout/InspectorPanel';
 import { ProjectHeader } from '@/components/layout/ProjectHeader';
 import { Topbar } from '@/components/layout/Topbar';
 import { cn } from '@/lib/utils';
-import type { ShellLayoutHandle } from '@/router/routes';
+import { appShellRouteMetadata, isAppRouteHandle } from '@/router/route-metadata';
 import { useInspectorStore } from '@/stores/inspector-store';
 
 export function AppShell() {
   const matches = useMatches();
   const isInspectorOpen = useInspectorStore((state) => state.isOpen);
-  const routeHandle = [...matches].reverse().find((match) => {
-    const handle = match.handle as ShellLayoutHandle | undefined;
-    return Boolean(handle?.shell);
-  })?.handle as ShellLayoutHandle | undefined;
-
-  const shell = routeHandle?.shell ?? {
-    showProjectHeader: false,
-    showInspector: true,
-    showBottomDrawer: true,
-  };
+  const routeHandle = [...matches].map((match) => match.handle).reverse().find(isAppRouteHandle);
+  const shell = routeHandle?.route.shell ?? appShellRouteMetadata.shell;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-on-surface">

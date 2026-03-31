@@ -1,17 +1,18 @@
 import { NavLink, useParams } from 'react-router-dom';
 
+import { buildProjectRoute, type ProjectScopedRouteId } from '@/lib/routes';
 import { ProjectStatusBadge } from '@/modules/projects/components/ProjectStatusBadge';
 import { useProjects } from '@/modules/projects/hooks/use-projects';
 import { cn } from '@/lib/utils';
 
 const tabs = [
-  { label: 'Overview', suffix: '' },
-  { label: 'Pipeline', suffix: '/pipeline' },
-  { label: 'Assets', suffix: '/assets' },
-  { label: 'Board', suffix: '/board' },
-  { label: 'Studio', suffix: '/studio' },
-  { label: 'QA', suffix: '/qa' },
-];
+  { label: 'Overview', routeId: 'projectOverview' },
+  { label: 'Pipeline', routeId: 'projectPipeline' },
+  { label: 'Assets', routeId: 'projectAssets' },
+  { label: 'Board', routeId: 'projectBoard' },
+  { label: 'Studio', routeId: 'projectStudio' },
+  { label: 'QA', routeId: 'projectQA' },
+] satisfies Array<{ label: string; routeId: ProjectScopedRouteId }>;
 
 export function ProjectHeader() {
   const { projectId } = useParams();
@@ -38,8 +39,8 @@ export function ProjectHeader() {
           {tabs.map((tab) => (
             <NavLink
               key={tab.label}
-              to={`/projects/${projectId}${tab.suffix}`}
-              end={!tab.suffix}
+              to={buildProjectRoute(tab.routeId, projectId)}
+              end={tab.routeId === 'projectOverview'}
               className={({ isActive }) =>
                 cn(
                   'rounded-[calc(var(--radius-sm)-2px)] px-3 py-2 text-sm font-medium transition-colors',
