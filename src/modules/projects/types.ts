@@ -1,11 +1,11 @@
 import type { Project } from '@/types/project';
 
-export type ProjectSummary = Project & {
-  clientInitial: string;
-  clientTone: string;
+export type ProjectProgressSnapshot = {
   progress: number;
   progressLabel: string;
-  statusLabel: string;
+};
+
+export type ProjectSummary = Project & ProjectProgressSnapshot & {
   createdLabel: string;
   meta: string;
 };

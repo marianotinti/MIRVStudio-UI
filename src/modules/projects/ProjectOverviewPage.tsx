@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProjectStatusBadge } from '@/modules/projects/components/ProjectStatusBadge';
 import { useProjects } from '@/modules/projects/hooks/use-projects';
 
 export function ProjectOverviewPage() {
@@ -20,7 +21,10 @@ export function ProjectOverviewPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>{project.title}</CardTitle>
+              <div className="flex items-start justify-between gap-3">
+                <CardTitle>{project.title}</CardTitle>
+                <ProjectStatusBadge status={project.status} />
+              </div>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <div className="rounded-[var(--radius-sm)] bg-surface-lowest p-4">

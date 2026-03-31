@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
-import type { ProjectSummary } from '@/modules/projects/types';
+import type { ProjectStatus } from '@/types/project';
 
-export function ProjectStatusBadge({ status }: { status: ProjectSummary['status'] }) {
+export function ProjectStatusBadge({ status }: { status: ProjectStatus }) {
   if (status === 'done') {
     return <Badge variant="success">Done</Badge>;
   }
@@ -12,6 +12,10 @@ export function ProjectStatusBadge({ status }: { status: ProjectSummary['status'
 
   if (status === 'failed') {
     return <Badge variant="danger">Failed</Badge>;
+  }
+
+  if (status === 'draft') {
+    return <Badge variant="outline">Draft</Badge>;
   }
 
   return <Badge variant="muted">Queued</Badge>;

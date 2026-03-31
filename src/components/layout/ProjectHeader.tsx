@@ -1,8 +1,8 @@
 import { NavLink, useParams } from 'react-router-dom';
 
-import { Badge } from '@/components/ui/badge';
-import { DEFAULT_PROJECT_NAME } from '@/lib/constants';
-import { cn, titleFromSlug } from '@/lib/utils';
+import { ProjectStatusBadge } from '@/modules/projects/components/ProjectStatusBadge';
+import { useProjects } from '@/modules/projects/hooks/use-projects';
+import { cn } from '@/lib/utils';
 
 const tabs = [
   { label: 'Overview', suffix: '' },
@@ -15,12 +15,14 @@ const tabs = [
 
 export function ProjectHeader() {
   const { projectId } = useParams();
+  const { project } = useProjects(projectId);
 
   if (!projectId) {
     return null;
   }
 
-  const projectName = projectId === 'alpha' ? DEFAULT_PROJECT_NAME : titleFromSlug(projectId);
+  const projectName = project?.title ?? projectId;
+  const projectStatus = project?.status ?? 'draft';
 
   return (
     <div className="border-b border-white/8 bg-surface-low/80 px-6 py-4 backdrop-blur-xl">
@@ -28,7 +30,7 @@ export function ProjectHeader() {
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-on-surface">{projectName}</h2>
-            <Badge variant="warning">Rendering</Badge>
+            <ProjectStatusBadge status={projectStatus} />
           </div>
           <p className="mt-1 text-sm text-on-surface-variant">Project-scoped navigation and shared panels live here.</p>
         </div>
