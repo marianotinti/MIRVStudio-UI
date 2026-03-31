@@ -1,42 +1,43 @@
-import { Bell, Cloud, Search } from "lucide-react";
+import { Bell, Cloud, Menu, Search } from 'lucide-react';
 
-interface TopbarProps {
-  title: string;
-}
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useRouteTitle } from '@/hooks/use-route-title';
+import { useUIStore } from '@/stores/ui-store';
 
-export function Topbar({ title }: TopbarProps) {
+export function Topbar() {
+  const title = useRouteTitle();
+  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
+
   return (
-    <header className="h-14 w-full flex items-center justify-between px-6 sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5">
+    <header className="flex h-16 w-full items-center justify-between border-b border-white/8 bg-background/70 px-6 backdrop-blur-xl">
       <div className="flex items-center gap-6">
-        <span className="font-mono text-xs font-bold text-primary tracking-widest uppercase">
-          {title}
-        </span>
-        <nav className="flex items-center gap-4 text-sm font-medium">
-          <span className="text-white/60 hover:text-white cursor-pointer transition-opacity">Project Alpha</span>
-          <span className="text-primary border-b border-primary py-4">Status: Rendering</span>
-          <span className="text-white/60 hover:text-white cursor-pointer transition-opacity">Share</span>
-        </nav>
-      </div>
-      
-      <div className="flex items-center gap-4">
-        <div className="relative group hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
-          <input 
-            type="text" 
-            placeholder="Search projects..." 
-            className="bg-surface-low border-none rounded text-xs pl-9 pr-4 py-1.5 w-64 focus:ring-1 focus:ring-primary/50 text-on-surface outline-none"
-          />
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-on-surface-variant hover:text-on-surface">
+          <Menu className="h-5 w-5" />
+        </Button>
+        <div>
+          <span className="font-mono text-[0.65rem] font-bold uppercase tracking-[0.24em] text-primary">
+            {title}
+          </span>
+          <p className="mt-1 text-sm text-on-surface-variant">MIRV Studio application shell</p>
         </div>
-        <div className="flex items-center gap-4 border-l border-white/10 pl-4">
-          <button className="text-white/60 hover:text-white transition-opacity">
-            <Bell className="w-5 h-5" />
-          </button>
-          <button className="text-primary hover:brightness-110 transition-all">
-            <Cloud className="w-5 h-5" />
-          </button>
-          <button className="ml-2 bg-primary-container text-on-primary-container px-4 py-1.5 rounded-sm text-xs font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:opacity-90 transition-all active:scale-95">
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="relative hidden md:block">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+          <Input placeholder="Search projects, jobs or assets..." className="w-72 pl-9" />
+        </div>
+        <div className="flex items-center gap-3 border-l border-white/8 pl-4">
+          <Button variant="ghost" size="icon" className="text-on-surface-variant hover:text-on-surface">
+            <Bell className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-primary hover:text-primary">
+            <Cloud className="h-5 w-5" />
+          </Button>
+          <Button size="sm" className="ml-2">
             Export
-          </button>
+          </Button>
         </div>
       </div>
     </header>

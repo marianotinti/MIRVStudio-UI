@@ -1,20 +1,41 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# MIRV Studio UI
 
-# Run and deploy your AI Studio app
+Frontend base for MIRV Studio, a modular production workspace for projects, pipeline operations, assets, QA, board and studio flows.
 
-This contains everything you need to run your app locally.
+## Current Scope
 
-View your app in AI Studio: https://ai.studio/apps/cf20d7ef-3c9b-455b-ba68-541299b7aa00
+- Vite + React frontend only
+- Modular dashboard shell and routing
+- Reusable UI primitives inspired by a shadcn-style system
+- Domain modules for projects, create, pipeline, assets, QA, settings, board and studio
 
-## Run Locally
+## Local Development
 
-**Prerequisites:**  Node.js
+Prerequisites:
 
+- Node.js 20+
+- npm 10+
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Install dependencies and start the dev server:
+
+```bash
+npm install
+npm run dev
+```
+
+## Project Direction
+
+This repository is the frontend workspace for MIRV Studio and is being refactored toward:
+
+- a real application shell
+- route-based navigation
+- shared layout primitives
+- modular domain boundaries
+- reusable stores and infrastructure
+
+## Scripts
+
+- `npm run dev`: start the Vite dev server
+- `npm run build`: produce a production build
+- `npm run preview`: preview the production build locally
+- `npm run lint`: run TypeScript in no-emit mode

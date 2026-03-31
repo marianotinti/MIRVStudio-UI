@@ -62,19 +62,19 @@ export function SettingsView() {
             <div className="space-y-8 animate-in fade-in duration-300">
               <div>
                 <h3 className="text-xl font-semibold mb-1">API Keys & Models</h3>
-                <p className="text-sm text-white/40">Configure your AI model providers and API keys.</p>
+                <p className="text-sm text-white/40">Configure your reasoning, rendering and internal model providers.</p>
               </div>
 
-              {/* Provider: Google Gemini */}
+              {/* Provider: Primary reasoning */}
               <div className="bg-surface-low border border-white/10 rounded-xl overflow-hidden">
                 <div className="p-5 border-b border-white/5 flex items-center justify-between bg-surface">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center">
-                      <span className="font-bold text-white">G</span>
+                      <span className="font-bold text-white">R</span>
                     </div>
                     <div>
-                      <h4 className="font-medium">Google Gemini</h4>
-                      <p className="text-xs text-white/40">Primary reasoning and multimodal model.</p>
+                      <h4 className="font-medium">Reasoning Provider</h4>
+                      <p className="text-xs text-white/40">Primary language, orchestration and multimodal endpoint.</p>
                     </div>
                   </div>
                   <div className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 text-[0.65rem] font-bold uppercase tracking-wider border border-emerald-500/20">
@@ -87,15 +87,15 @@ export function SettingsView() {
                     <input 
                       type="password" 
                       className="w-full bg-surface-highest border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 transition-colors font-mono"
-                      defaultValue="AIzaSyB-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      defaultValue="mirv-provider-key"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-mono uppercase text-white/60 mb-2">Default Model</label>
                     <select className="w-full bg-surface-highest border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary/50 transition-colors appearance-none">
-                      <option>gemini-2.5-pro</option>
-                      <option>gemini-2.5-flash</option>
-                      <option>gemini-2.5-flash-8b</option>
+                      <option>reasoning-core-v1</option>
+                      <option>reasoning-fast-v1</option>
+                      <option>vision-router-v1</option>
                     </select>
                   </div>
                 </div>

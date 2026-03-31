@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { 
   FileText, 
   Globe, 
@@ -13,6 +12,7 @@ import {
   Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCreateProjectStore } from '@/stores/create-project-store';
 
 const STEPS = [
   { id: 'brief', title: 'Brief & Format', icon: FileText },
@@ -22,10 +22,11 @@ const STEPS = [
 ];
 
 export function CreateView() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const currentStep = useCreateProjectStore((state) => state.currentStep);
+  const nextStep = useCreateProjectStore((state) => state.nextStep);
+  const prevStep = useCreateProjectStore((state) => state.previousStep);
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, STEPS.length - 1));
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+  const handleNextStep = () => nextStep(STEPS.length);
 
   return (
     <div className="flex-1 flex flex-col bg-background overflow-hidden">
@@ -275,7 +276,7 @@ export function CreateView() {
 
         {currentStep < STEPS.length - 1 ? (
           <button 
-            onClick={nextStep}
+            onClick={handleNextStep}
             className="px-6 py-2.5 bg-white text-black rounded text-sm font-semibold hover:bg-white/90 transition-colors flex items-center gap-2"
           >
             Continue <ChevronRight className="w-4 h-4" />

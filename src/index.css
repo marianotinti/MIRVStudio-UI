@@ -1,29 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-background: #131314;
-  --color-primary: #C0C1FF;
-  --color-primary-container: #8083FF;
-  --color-surface-lowest: #0E0E0F;
-  --color-surface-low: #1C1B1C;
-  --color-surface: #201f20;
-  --color-surface-high: #2A2A2B;
-  --color-surface-highest: #353436;
-  --color-indigo-accent: #6366F1;
-  --color-outline-variant: #464554;
-  --color-on-surface: #e5e2e3;
-  --color-on-surface-variant: #c7c4d7;
+  --color-background: #0b1020;
+  --color-background-elevated: #11182d;
+  --color-primary: #8ec5ff;
+  --color-primary-container: #1e385f;
+  --color-surface-lowest: #080d18;
+  --color-surface-low: #10192b;
+  --color-surface: #162136;
+  --color-surface-high: #1d2940;
+  --color-surface-highest: #24334e;
+  --color-indigo-accent: #6cb2ff;
+  --color-outline-variant: #30415f;
+  --color-on-surface: #eef4ff;
+  --color-on-surface-variant: #a8b6d1;
+  --color-muted: #7183a3;
+  --color-card-border: rgba(255, 255, 255, 0.08);
 
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: 'Space Grotesk', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-card-border);
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(142, 197, 255, 0.15), transparent 30%),
+      radial-gradient(circle at 80% 10%, rgba(90, 119, 255, 0.12), transparent 25%),
+      linear-gradient(180deg, #0b1020 0%, #0a1221 100%);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
 }
 
 @layer utilities {
   .glass-panel {
-    background-color: rgba(53, 52, 54, 0.8);
+    background-color: rgba(16, 25, 43, 0.72);
     backdrop-filter: blur(12px);
   }
+
+  .surface-panel {
+    background: linear-gradient(180deg, rgba(29, 41, 64, 0.86), rgba(16, 25, 43, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -44,9 +83,17 @@
   }
 }
 
-body {
-  background-color: var(--color-background);
-  color: var(--color-on-surface);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+.animate-enter {
+  animation: enter 180ms ease-out;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

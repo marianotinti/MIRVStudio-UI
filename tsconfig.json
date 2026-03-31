@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ES2022",
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
@@ -16,6 +17,36 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {
+      "@/components": [
+        "./src/components"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/components/ui": [
+        "./src/components/ui"
+      ],
+      "@/components/ui/*": [
+        "./src/components/ui/*"
+      ],
+      "@/hooks": [
+        "./src/hooks"
+      ],
+      "@/hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@/lib": [
+        "./src/lib"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/types": [
+        "./src/types"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ],
       "@/*": [
         "./src/*"
       ]

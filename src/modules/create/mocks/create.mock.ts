@@ -1,0 +1,1 @@
+export const createProjectSteps = ['brief', 'profile', 'references', 'review'] as const;

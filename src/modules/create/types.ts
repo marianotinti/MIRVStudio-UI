@@ -1,0 +1,1 @@
+export type CreateProjectStep = 'brief' | 'profile' | 'references' | 'review';
