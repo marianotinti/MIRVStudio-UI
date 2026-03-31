@@ -8,7 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "node -e \"console.log('Lint: no linter configured')\"",
+    "typecheck": "tsc --noEmit",
+    "audit:branding": "node scripts/audit-branding.mjs",
+    "audit:imports": "node scripts/audit-import-aliases.mjs",
+    "audit:mocks": "node scripts/audit-component-mocks.mjs",
+    "smoke:routes": "tsx scripts/smoke-route-shell.ts",
+    "audit:consistency": "npm run audit:branding && npm run audit:imports && npm run audit:mocks && npm run smoke:routes && npm run typecheck"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

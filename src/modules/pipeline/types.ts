@@ -1,3 +1,5 @@
+import type { Job } from '@/types/job';
+
 export type PipelineStage = {
   id: string;
   title: string;
@@ -5,9 +7,6 @@ export type PipelineStage = {
   duration?: string;
 };
 
-export type PipelineJob = {
-  id: string;
-  type: string;
-  status: 'running' | 'success' | 'failed';
+export type PipelineJob = Job & {
   log: string;
 };

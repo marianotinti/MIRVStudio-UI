@@ -11,20 +11,29 @@ export const pipelineStagesMock: PipelineStage[] = [
 export const pipelineJobsMock: PipelineJob[] = [
   {
     id: '#TX-8802',
+    sceneId: 'scene-alpha-01',
     type: 'Visual Synthesis',
     status: 'running',
+    lastLogLine: '[14:02:11] Starting tensor allocation for scene_01...',
+    updatedAt: '2026-03-31T14:15:12Z',
     log: '[14:02:11] Starting tensor allocation for scene_01...',
   },
   {
     id: '#TX-8801',
+    sceneId: 'scene-alpha-01',
     type: 'Logic Parser',
     status: 'success',
+    lastLogLine: '[14:00:04] Logic tree validated. Exiting 0.',
+    updatedAt: '2026-03-31T14:00:04Z',
     log: '[14:00:04] Logic tree validated. Exiting 0.',
   },
   {
     id: '#TX-8799',
+    sceneId: 'scene-alpha-02',
     type: 'Prompt Encoder',
     status: 'failed',
+    lastLogLine: 'ERROR: Connection timeout on port 8080 (Gateway).',
+    updatedAt: '2026-03-31T13:58:44Z',
     log: 'ERROR: Connection timeout on port 8080 (Gateway).',
   },
 ];
