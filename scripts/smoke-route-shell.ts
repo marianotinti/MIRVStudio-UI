@@ -41,12 +41,16 @@ for (const pathname of requiredRoutes) {
 
 const routeCases = [
   {
-    pathname: routes.projectBoard(sampleProjectId),
-    expectedMetadata: routeMetadata.projectBoard,
+    pathname: routes.projects(),
+    expectedMetadata: routeMetadata.projects,
   },
   {
-    pathname: routes.projectStudio(sampleProjectId),
-    expectedMetadata: routeMetadata.projectStudio,
+    pathname: routes.create(),
+    expectedMetadata: routeMetadata.create,
+  },
+  {
+    pathname: routes.projectOverview(sampleProjectId),
+    expectedMetadata: routeMetadata.projectOverview,
   },
   {
     pathname: routes.projectPipeline(sampleProjectId),
@@ -57,12 +61,20 @@ const routeCases = [
     expectedMetadata: routeMetadata.projectAssets,
   },
   {
+    pathname: routes.projectBoard(sampleProjectId),
+    expectedMetadata: routeMetadata.projectBoard,
+  },
+  {
+    pathname: routes.projectStudio(sampleProjectId),
+    expectedMetadata: routeMetadata.projectStudio,
+  },
+  {
     pathname: routes.projectQA(sampleProjectId),
     expectedMetadata: routeMetadata.projectQA,
   },
   {
-    pathname: routes.projects(),
-    expectedMetadata: routeMetadata.projects,
+    pathname: routes.settings(),
+    expectedMetadata: routeMetadata.settings,
   },
 ];
 
