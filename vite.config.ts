@@ -17,5 +17,7 @@ export default defineConfig({
   },
   server: {
     hmr: process.env.DISABLE_HMR !== 'true',
+    // Cursor (and similar) forward dev servers via a changing *.cursorvm.com host.
+    allowedHosts: true,
   },
 });
