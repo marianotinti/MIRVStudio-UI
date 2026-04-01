@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { routes } from '@/lib/routes';
 import { ProjectStatusBadge } from '@/modules/projects/components/ProjectStatusBadge';
 import type { ProjectSummary } from '@/modules/projects/types';
 
@@ -28,7 +29,7 @@ export function ProjectCard({ project }: { project: ProjectSummary }) {
             <div className="mt-1 font-mono text-on-surface">{project.deliveryFormat}</div>
           </div>
         </div>
-        <Link to={`/projects/${project.slug}/pipeline`} className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+        <Link to={routes.projectPipeline(project.id)} className="inline-flex items-center gap-2 text-sm font-medium text-primary">
           Open pipeline <ArrowRight className="h-4 w-4" />
         </Link>
       </CardContent>

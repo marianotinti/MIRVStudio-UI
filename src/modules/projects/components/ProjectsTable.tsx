@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
+import { routes } from '@/lib/routes';
 import { ProjectStatusBadge } from '@/modules/projects/components/ProjectStatusBadge';
 import type { ProjectSummary } from '@/modules/projects/types';
 
@@ -23,7 +24,7 @@ export function ProjectsTable({ projects }: { projects: ProjectSummary[] }) {
           {projects.map((project) => (
             <tr
               key={project.id}
-              onClick={() => navigate(`/projects/${project.slug}`)}
+              onClick={() => navigate(routes.projectOverview(project.id))}
               className="cursor-pointer transition-colors hover:bg-white/3"
             >
               <td className="px-4 py-4 font-mono text-xs text-on-surface-variant">{project.id}</td>

@@ -2,6 +2,7 @@ import { FolderGit2, Images, PlayCircle, Sparkles } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { EmptyState } from '@/components/shared/EmptyState';
+import { routes } from '@/lib/routes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectStatusBadge } from '@/modules/projects/components/ProjectStatusBadge';
@@ -11,7 +12,7 @@ export function ProjectOverviewPage() {
   const { projectId } = useParams();
   const { project } = useProjects(projectId);
 
-  if (!project) {
+  if (!project || !projectId) {
     return <EmptyState title="Project not found" description="The requested project could not be resolved from the current mock domain contracts." />;
   }
 
@@ -43,19 +44,19 @@ export function ProjectOverviewPage() {
           </Card>
           <div className="grid gap-4 md:grid-cols-3">
             <Button asChild variant="secondary" className="h-20 justify-start rounded-[var(--radius-lg)] px-5 text-left">
-              <Link to={`/projects/${project.slug}/pipeline`}>
+              <Link to={routes.projectPipeline(projectId)}>
                 <PlayCircle className="h-5 w-5" />
                 Pipeline
               </Link>
             </Button>
             <Button asChild variant="secondary" className="h-20 justify-start rounded-[var(--radius-lg)] px-5 text-left">
-              <Link to={`/projects/${project.slug}/assets`}>
+              <Link to={routes.projectAssets(projectId)}>
                 <Images className="h-5 w-5" />
                 Assets
               </Link>
             </Button>
             <Button asChild variant="secondary" className="h-20 justify-start rounded-[var(--radius-lg)] px-5 text-left">
-              <Link to={`/projects/${project.slug}/board`}>
+              <Link to={routes.projectBoard(projectId)}>
                 <Sparkles className="h-5 w-5" />
                 Board
               </Link>
