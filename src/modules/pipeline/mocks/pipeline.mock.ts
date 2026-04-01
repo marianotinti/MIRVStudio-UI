@@ -1,4 +1,4 @@
-import type { PipelineJob, PipelineStage } from '@/modules/pipeline/types';
+import type { PipelineJob, PipelineSnapshot, PipelineStage } from '@/modules/pipeline/types';
 
 export const pipelineStagesMock: PipelineStage[] = [
   { id: 'creative-concept', title: 'Creative Concept', status: 'complete', duration: '12s' },
@@ -46,3 +46,19 @@ export const pipelineLogsMock = [
   '[14:15:10] JOB_STREAM: Layer 4 pull complete. Decompressing...',
   '[14:15:12] CORE: Running Scene Synthesis logic chain...',
 ];
+
+export function getPipelineSnapshotMock(projectId?: string): Omit<PipelineSnapshot, 'source'> {
+  const scopedJobs =
+    projectId == null
+      ? pipelineJobsMock
+      : pipelineJobsMock.map((job) => ({
+          ...job,
+          sceneId: `${projectId}-${job.sceneId}`,
+        }));
+
+  return {
+    stages: pipelineStagesMock,
+    jobs: scopedJobs,
+    logs: pipelineLogsMock,
+  };
+}
