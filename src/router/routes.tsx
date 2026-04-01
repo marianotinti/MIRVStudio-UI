@@ -1,7 +1,8 @@
-import { Navigate, type RouteObject } from 'react-router-dom';
+import { type RouteObject } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/AppShell';
 import { routePatterns } from '@/lib/routes';
+import { LandingPage } from '@/pages/LandingPage';
 import { AssetsPage } from '@/modules/assets/AssetsPage';
 import { BoardPage } from '@/modules/board/BoardPage';
 import { CreatePage } from '@/modules/create/CreatePage';
@@ -16,7 +17,7 @@ import { StudioPage } from '@/modules/studio/StudioPage';
 export const appRoutes: RouteObject[] = [
   {
     path: '/',
-    element: <Navigate to={routePatterns.projects} replace />,
+    element: <LandingPage />,
   },
   {
     element: <AppShell />,

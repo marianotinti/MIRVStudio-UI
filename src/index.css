@@ -18,8 +18,9 @@
   --color-muted: #7183a3;
   --color-card-border: rgba(255, 255, 255, 0.08);
 
-  --font-sans: 'Space Grotesk', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  /* MIRVStudio_design-system.md §3 — Primary UI: Inter; logs/IDs: monospace */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --radius-sm: 0.5rem;
   --radius-md: 0.875rem;
   --radius-lg: 1.25rem;
